@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct AlphabetScrollView: View {
+struct AlphabetFilterScrollView: View {
     
     // MARK: - Attributes
     let alphabet: [String]
