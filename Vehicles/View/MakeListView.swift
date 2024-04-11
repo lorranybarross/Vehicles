@@ -9,12 +9,12 @@ import SwiftUI
 
 struct MakeListView: View {
     
+    // MARK: - Attributes
     let make: Make
-    
-    @Environment(\.colorScheme) private var colorScheme
     
     @State private var colors = Colors.colors.map { $0.color }
     
+    // MARK: - Main View
     var body: some View {
         let color = colors[Int(make.code)! % colors.count]
         ZStack {
@@ -23,25 +23,9 @@ struct MakeListView: View {
                 .foregroundStyle(color)
                 .padding(.vertical, -55)
             
-            HStack {
-                var name = make.name
-                Image("\(name.filter { $0.isLetter || $0.isNumber || $0.isWhitespace })")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 50, height: 50)
-                    .padding(5)
-                    .background(.textPrimary)
-                    .clipShape(.rect(cornerRadius: 10))
-                
-                Text(make.name).tag(make.code)
-                    .foregroundStyle(.textPrimary)
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .foregroundStyle(.textPrimary)
+            VStack {
+                showCardView
             }
-            .padding()
         }
         .frame(maxWidth: .infinity, maxHeight: 30)
         .font(.title3)
@@ -51,6 +35,25 @@ struct MakeListView: View {
         .padding(.vertical, 40)
         .background(.regularMaterial)
         .clipShape(.rect(cornerRadius: 10))
+    }
+    
+    // MARK: - Other Views
+    var textView: some View {
+        HStack {
+            Text(make.name).tag(make.code)
+            Spacer()
+            Image(systemName: "chevron.right")
+        }
+    }
+    
+    var showCardView: some View {
+        HStack {
+            LogoView(imageName:
+                        "\(make.name.filter { $0.isLetter || $0.isNumber || $0.isWhitespace })")
+            textView
+        }
+        .foregroundStyle(.textPrimary)
+        .padding()
     }
 }
 

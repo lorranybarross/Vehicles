@@ -43,16 +43,6 @@ struct FilterView: View {
         }
     }
     
-    func getYearsByMake() async {
-        do {
-            if let response = try await WebService().getYearsByMake(makeCode: make.code) {
-                years = response
-            }
-        } catch {
-            print("Error: \(error)")
-        }
-    }
-    
     func convertStringToYear(year: Double) -> String {
         return String(Int(year))
     }
@@ -145,10 +135,7 @@ struct FilterView: View {
         }
         .padding()
         .onAppear {
-            Task {
-                await getYearsByMake()
-                minYear = minYearPossible
-            }
+            
         }
     }
 }

@@ -8,11 +8,22 @@
 import SwiftUI
 
 struct LogoView: View {
+    
+    let imageName: String
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            Image(imageName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 50, height: 50)
+                .padding(5)
+                .background(.white)
+                .clipShape(.rect(cornerRadius: 10))
+        }
     }
 }
 
 #Preview {
-    LogoView()
+    LogoView(imageName: "Fiat")
 }

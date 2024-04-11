@@ -1,5 +1,5 @@
 //
-//  ListOfModelsOrYears.swift
+//  ListOfModelsOrYearsView.swift
 //  Vehicles
 //
 //  Created by Lorrany Barros on 07/04/24.
@@ -42,7 +42,7 @@ struct ListOfModelsOrYearsView: View {
             if let models {
                 ForEach(models, id: \.code) { model in
                     NavigationLink {
-                        SecondListOfModelsOrYearsView(title: title, make: make, model: model, monthCode: monthCode)
+                        SecondDetailView(title: title, make: make, model: model, monthCode: monthCode)
                     } label: {
                         TextList(model.name)
                     }
@@ -56,7 +56,7 @@ struct ListOfModelsOrYearsView: View {
             if let years {
                ForEach(years, id: \.code) { year in
                    NavigationLink {
-                       SecondListOfModelsOrYearsView(title: title, make: make, year: year, monthCode: monthCode)
+                       SecondDetailView(title: title, make: make, year: year, monthCode: monthCode)
                    } label: {
                        TextList(year.yearNameWithZeroKM)
                    }

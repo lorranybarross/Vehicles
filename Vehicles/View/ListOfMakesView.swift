@@ -14,30 +14,48 @@ struct ListOfMakesView: View {
     let grid: Bool
     let makes: [Make]
     
-    // MARK: - View
+    // MARK: - Main View
     var body: some View {
         ScrollView(showsIndicators: false) {
-            if grid {
-                LazyVGrid(columns: columns, spacing: 20) {
-                    ForEach(makes, id: \.code) { make in
-                        NavigationLink {
-                            MakeDetailView(make: make)
-                        } label: {
-                            MakeCardView(make: make)
-                        }
-                    }
-                }
+            if makes.isEmpty {
+                Text("No data available")
             } else {
-                ForEach(makes, id: \.code) { make in
-                    NavigationLink {
-                        MakeDetailView(make: make)
-                    } label: {
-                        MakeListView(make: make)
-                    }
-                }
+                showView
             }
         }
         .padding(.horizontal)
+    }
+    
+    // MARK: - Other Views
+    var gridView: some View {
+        LazyVGrid(columns: columns, spacing: 20) {
+            ForEach(makes, id: \.code) { make in
+                NavigationLink {
+                    MakeDetailView(make: make)
+                } label: {
+                    MakeCardView(make: make)
+                }
+            }
+        }
+    }
+    
+    var listView: some View {
+        ForEach(makes, id: \.code) { make in
+            NavigationLink {
+                MakeDetailView(make: make)
+            } label: {
+                MakeListView(make: make)
+            }
+        }
+    }
+    
+    var showView: some View {
+        switch grid {
+        case true:
+            return AnyView(gridView)
+        default:
+            return AnyView(listView)
+        }
     }
 }
 

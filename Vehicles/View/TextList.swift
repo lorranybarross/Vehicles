@@ -8,11 +8,31 @@
 import SwiftUI
 
 struct TextList: View {
+    let text: String
+        
+    init(_ text: String) {
+        self.text = text
+    }
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        HStack {
+            Text(text)
+                .font(.headline)
+                .fixedSize(horizontal: false, vertical: true)
+                .multilineTextAlignment(.leading)
+                .foregroundStyle(.textPrimary)
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.regularMaterial)
+        .cornerRadius(10)
     }
 }
 
 #Preview {
-    TextList()
+    TextList("Models")
 }

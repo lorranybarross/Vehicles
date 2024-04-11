@@ -6,63 +6,77 @@
 //
 
 import Foundation
+import Combine
 
-struct WebService {
+enum NetworkError: Error {
+    case requestError
+}
+
+class WebService {
     private let baseURL = "https://parallelum.com.br/fipe/api/v2/cars"
     
-    func getMakes() async throws -> [Make]? {
+    func fetchMakes() -> AnyPublisher<[Make], Error> {
         let endpoint = baseURL + "/brands"
+        let request = URLRequest(url: URL(string: endpoint)!)
         
-        guard let url = URL(string: endpoint) else { return nil }
-        
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let result = try JSONDecoder().decode([Make].self, from: data)
-        
-        return result
+        return URLSession.shared.dataTaskPublisher(for: request)
+            .tryMap { data, response -> Data in
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    throw NetworkError.requestError
+                }
+                
+                return data
+            }
+            .decode(type: [Make].self, decoder: JSONDecoder())
+            .eraseToAnyPublisher()
     }
     
-    func getModels(makeCode: String) async throws -> [Model]? {
+    func fetchModels(makeCode: String) -> AnyPublisher<[Model], Error> {
         let endpoint = baseURL + "/brands/" + makeCode + "/models"
-                
-        guard let url = URL(string: endpoint) else { return nil }
         
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let result = try JSONDecoder().decode([Model].self, from: data)
+        let url = URL(string: endpoint)!
         
-        return result
+        return URLSession.shared.dataTaskPublisher(for: url)
+            .map(\.data) // Get only data
+            .decode(type: [Model].self, decoder: JSONDecoder()) // Decode data to Make
+            .receive(on: DispatchQueue.main) // Main thread
+            .eraseToAnyPublisher() // Convert to AnyPublisher
     }
     
-    func getModelsByMakeAndYear(makeCode: String, yearCode: String) async throws -> [Model]? {
+    func fetchModelsByMakeAndYear(makeCode: String, yearCode: String) -> AnyPublisher<[Model], Error> {
         let endpoint = baseURL + "/brands/" + makeCode + "/years/" + yearCode + "/models"
-                        
-        guard let url = URL(string: endpoint) else { return nil }
         
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let result = try JSONDecoder().decode([Model].self, from: data)
-                
-        return result
+        let url = URL(string: endpoint)!
+        
+        return URLSession.shared.dataTaskPublisher(for: url)
+            .map(\.data)
+            .decode(type: [Model].self, decoder: JSONDecoder())
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
     }
     
-    func getYearsByModel(makeCode: String, modelCode: String) async throws -> [ModelYear]? {
+    func fetchYearsByModel(makeCode: String, modelCode: String) -> AnyPublisher<[ModelYear], Error> {
         let endpoint = baseURL + "/brands/" + makeCode + "/models/" + modelCode + "/years"
-                        
-        guard let url = URL(string: endpoint) else { return nil }
         
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let result = try JSONDecoder().decode([ModelYear].self, from: data)
-                
-        return result
+        let url = URL(string: endpoint)!
+        
+        return URLSession.shared.dataTaskPublisher(for: url)
+            .map(\.data)
+            .decode(type: [ModelYear].self, decoder: JSONDecoder())
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
     }
     
-    func getYearsByMake(makeCode: String) async throws -> [ModelYear]? {
+    func fetchYearByMake(makeCode: String) -> AnyPublisher<[ModelYear], Error> {
         let endpoint = baseURL + "/brands/" + makeCode + "/years"
-                        
-        guard let url = URL(string: endpoint) else { return nil }
         
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let result = try JSONDecoder().decode([ModelYear].self, from: data)
-                
-        return result
+        let url = URL(string: endpoint)!
+        
+        return URLSession.shared.dataTaskPublisher(for: url)
+            .map(\.data)
+            .decode(type: [ModelYear].self, decoder: JSONDecoder())
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
     }
     
     func getFipe(makeCode: String, modelCode: String, yearCode: String, monthCode: String) async throws -> Fipe? {
@@ -76,14 +90,15 @@ struct WebService {
         return result
     }
     
-    func getMonthReference() async throws -> [MonthReference]? {
+    func fetchMonthReference() -> AnyPublisher<[MonthReference], Error> {
         let endpoint = baseURL.split(separator: "/").dropLast().joined(separator: "/") + "/references"
-                
-        guard let url = URL(string: endpoint) else { return nil }
         
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let result = try JSONDecoder().decode([MonthReference].self, from: data)
-                                
-        return result
+        let url = URL(string: endpoint)!
+        
+        return URLSession.shared.dataTaskPublisher(for: url)
+            .map(\.data)
+            .decode(type: [MonthReference].self, decoder: JSONDecoder())
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
     }
 }
