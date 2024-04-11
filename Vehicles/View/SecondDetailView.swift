@@ -39,9 +39,7 @@ struct SecondDetailView: View {
                 }
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Back", systemImage: "chevron.left") {
-                            dismiss()
-                        }
+                        BackButtonView()
                     }
                 }
             }
@@ -78,6 +76,26 @@ struct SecondDetailView: View {
         }
     }
     
+    var loadingView: some View {
+        VStack(spacing: 10) {
+            ProgressView("Loading...")
+                .padding(.vertical)
+                .scaleEffect(1.5, anchor: .center)
+                .animation(.easeInOut(duration: 0.5), value: viewModel.viewState)
+        }
+    }
+    
+    var errorView: some View {
+        VStack {
+            if !viewModel.errorMessage.isEmpty {
+                Text(viewModel.errorMessage)
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding()
+    }
+    
     var contentView: some View {
         ScrollView {
             if let model = viewModel.model {
@@ -87,6 +105,17 @@ struct SecondDetailView: View {
             } else {
                 Text("No data available")
             }
+        }
+    }
+    
+    var showListView: some View {
+        switch viewModel.viewState {
+        case .loading:
+            return AnyView(loadingView)
+        case .ready:
+            return AnyView(contentView)
+        case .error:
+            return AnyView(errorView)
         }
     }
 }

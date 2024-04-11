@@ -13,6 +13,7 @@ class SecondDetailViewModel: ObservableObject {
     @Published var displayedModels: [Model]? = nil
     @Published var years: [ModelYear]?
     @Published var displayedYears: [ModelYear]? = nil
+    @Published var errorMessage = ""
     let make: Make
     let model: Model?
     let year: ModelYear?
@@ -38,16 +39,6 @@ class SecondDetailViewModel: ObservableObject {
     }
     
     func loadModels() {
-        let cachedData = ModelCache.cachedModel()
-        if let cache = cachedData {
-            if cache.count > 0 {
-                models = cache
-                displayedModels = models
-                self.viewState = .ready
-                return
-            }
-        }
-        
         if let year {
             let modelsPublisher = webService.fetchModelsByMakeAndYear(makeCode: make.code, yearCode: year.code)
             
@@ -56,7 +47,10 @@ class SecondDetailViewModel: ObservableObject {
                     switch completion {
                     case .finished:
                         break
-                    case .failure(_):
+                    case .failure(let error):
+                        if let requestError = error as? RequestError {
+                            self.errorMessage = requestError.errorMessage
+                        }
                         self.viewState = .error
                     }
                 }, receiveValue: { models in
@@ -68,16 +62,6 @@ class SecondDetailViewModel: ObservableObject {
     }
     
     func loadYears() {
-        let cachedData = YearCache.cachedYear()
-        if let cache = cachedData {
-            if cache.count > 0 {
-                years = cache
-                displayedYears = years
-                self.viewState = .ready
-                return
-            }
-        }
-        
         if let model {
             let yearsPublisher = webService.fetchYearsByModel(makeCode: make.code, modelCode: model.code)
             
@@ -86,7 +70,10 @@ class SecondDetailViewModel: ObservableObject {
                     switch completion {
                     case .finished:
                         break
-                    case .failure(_):
+                    case .failure(let error):
+                        if let requestError = error as? RequestError {
+                            self.errorMessage = requestError.errorMessage
+                        }
                         self.viewState = .error
                     }
                 }, receiveValue: { years in

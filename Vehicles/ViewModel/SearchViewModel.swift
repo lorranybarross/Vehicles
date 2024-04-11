@@ -13,7 +13,7 @@ class SearchViewModel: ObservableObject {
     @Published var displayedMakes = [Make]()
     @Published var isShowingGrid = true
     @Published var isSearchingByLetter = false
-    @Published var errorMessage: String? = nil
+    @Published var errorMessage = ""
     
     private let webService = WebService()
     private var cancellable: AnyCancellable?
@@ -36,15 +36,15 @@ class SearchViewModel: ObservableObject {
                 case .finished:
                     break
                 case .failure(let error):
-                    self.errorMessage = "\(error.localizedDescription)"
+                    if let requestError = error as? RequestError {
+                        self.errorMessage = requestError.errorMessage
+                    }
                     self.viewState = .error
                 }
             }, receiveValue: { makes in
-                DispatchQueue.main.async {
-                    self.makes = makes
-                    self.displayedMakes = self.makes
-                    self.viewState = .ready
-                }
+                self.makes = makes
+                self.displayedMakes = self.makes
+                self.viewState = .ready
                 MakeCache.cacheMake(makes)
             })
     }
@@ -69,29 +69,5 @@ class SearchViewModel: ObservableObject {
         } else {
             displayedMakes = makes.filter { $0.name.localizedStandardContains(query) }
         }
-    }
-}
-
-struct MakeCache {
-    static let makeCache: NSCache = NSCache<NSString, NSData>()
-    
-    static func cacheMake(_ makes: [Make]) {
-        let encoder = JSONEncoder()
-        if let encoded = try? encoder.encode(makes) {
-            let data = NSData(data: encoded)
-            makeCache.setObject(data, forKey: "kMakes" as NSString)
-        }
-    }
-    
-    static func cachedMake() -> [Make]? {
-        if let data = makeCache.object(forKey: "kMakes" as NSString) as Data? {
-            do {
-                let makes = try JSONDecoder().decode([Make].self, from: data)
-                return makes
-            } catch {
-                print("Failed to decode from cache: \(error)")
-            }
-        }
-        return nil
     }
 }

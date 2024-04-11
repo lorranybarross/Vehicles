@@ -46,9 +46,7 @@ struct MakeDetailView: View {
                 }
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Back", systemImage: "chevron.left") {
-                            dismiss()
-                        }
+                        BackButtonView()
                     }
                 }
             }
@@ -99,6 +97,17 @@ struct MakeDetailView: View {
         }
     }
     
+    var errorView: some View {
+        VStack {
+            if !viewModel.errorMessage.isEmpty {
+                Text(viewModel.errorMessage)
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding()
+    }
+    
     var showContent: some View {
         VStack {
             if pickerChoice == .models {
@@ -143,7 +152,7 @@ struct MakeDetailView: View {
         case .ready:
             return AnyView(detailView)
         case .error:
-            return AnyView(detailView)
+            return AnyView(errorView)
         }
     }
 }

@@ -14,6 +14,7 @@ class MakeDetailViewModel: ObservableObject {
     @Published var displayedModels = [Model]()
     @Published var years = [ModelYear]()
     @Published var displayedYears = [ModelYear]()
+    @Published var errorMessage = ""
     let make: Make
     let colors = Colors.colors.map { $0.color }
     
@@ -53,7 +54,10 @@ class MakeDetailViewModel: ObservableObject {
                 switch completion {
                 case .finished:
                     break
-                case .failure(_):
+                case .failure(let error):
+                    if let requestError = error as? RequestError {
+                        self.errorMessage = requestError.errorMessage
+                    }
                     self.viewState = .error
                 }
             } receiveValue: { models, years, months in

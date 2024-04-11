@@ -69,8 +69,8 @@ struct SearchView: View {
     
     var errorView: some View {
         VStack {
-            if let errorMessage = viewModel.errorMessage {
-                Text(errorMessage)
+            if !viewModel.errorMessage.isEmpty {
+                Text(viewModel.errorMessage)
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
             }
