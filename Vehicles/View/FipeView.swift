@@ -26,12 +26,11 @@ struct FipeView: View {
                     .ignoresSafeArea()
                 
                 ScrollView(showsIndicators: false) {
-                    VStack {
+                    VStack(alignment: .leading) {
                         showFipeView
-                        graphView
                     }
-                    .padding()
                 }
+                .padding()
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -62,6 +61,7 @@ struct FipeView: View {
                 .padding(.vertical)
                 .scaleEffect(1.5, anchor: .center)
                 .animation(.easeInOut(duration: 0.5), value: viewModel.viewState)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
     
@@ -79,11 +79,11 @@ struct FipeView: View {
     var informationView: some View {
         Group {
             if let fipe = viewModel.fipe {
-                InfoRow(title: "Code", systemImage: "number", detail: fipe.codeFipe)
-                InfoRow(title: "Make", systemImage: "info.square.fill", detail: fipe.brand.uppercased())
-                InfoRow(title: "Model", systemImage: "car.fill", detail: fipe.model)
-                InfoRow(title: "Year", systemImage: "calendar", detail: fipe.yearAsString)
-                InfoRow(title: "Fuel", systemImage: "fuelpump.fill", detail: fipe.fuel)
+                InfoRowView(title: "Code", systemImage: "number", detail: fipe.codeFipe)
+                InfoRowView(title: "Make", systemImage: "info.square.fill", detail: fipe.brand.uppercased())
+                InfoRowView(title: "Model", systemImage: "car.fill", detail: fipe.model)
+                InfoRowView(title: "Year", systemImage: "calendar", detail: fipe.yearAsString)
+                InfoRowView(title: "Fuel", systemImage: "fuelpump.fill", detail: fipe.fuel)
             }
         }
     }
@@ -106,10 +106,10 @@ struct FipeView: View {
     
     var graphView: some View {
         VStack {
-//            Divider()
-//                .padding()
-//            Text("Fipe price from the past 6 months")
-//                .bold()
+            Divider()
+                .padding()
+            Text("Fipe price from the past 6 months")
+                .bold()
             Chart(viewModel.fipeFromPeriod, id: \.referenceMonth) { period in
                 LineMark(
                     x: .value("Month", period.shortReferenceMonth),
@@ -130,6 +130,7 @@ struct FipeView: View {
             headerView
             informationView
             priceView
+            graphView
         }
     }
     
@@ -147,18 +148,4 @@ struct FipeView: View {
 
 #Preview {
     FipeView(make: Make.makeMock, model: Model.modelMock, year: ModelYear.modelYearMock, monthCode: "308")
-}
-
-struct InfoRow: View {
-    var title: String
-    var systemImage: String
-    var detail: String
-    
-    var body: some View {
-        VStack(alignment: .leading) {
-            Label(title, systemImage: systemImage)
-                .font(.footnote)
-            Text(detail)
-        }
-    }
 }

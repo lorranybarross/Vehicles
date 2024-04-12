@@ -18,7 +18,7 @@ class MakeDetailViewModel: ObservableObject {
     let make: Make
     let colors = Colors.colors.map { $0.color }
     
-    private let webService = WebService()
+    private let service = WebService()
     private var cancellables = Set<AnyCancellable>()
     var viewState = ViewState.loading
     
@@ -45,9 +45,17 @@ class MakeDetailViewModel: ObservableObject {
             }
         }
         
-        let modelsPublisher = webService.fetchModels(makeCode: make.code)
-        let yearsPublisher = webService.fetchYearByMake(makeCode: make.code)
-        let monthsPublisher = webService.fetchMonthReference()
+        guard let modelsURL = buildURL(path: "/cars/brands/\(make.code)/models"),
+              let yearsURL = buildURL(path: "/cars/brands/\(make.code)/years"),
+              let monthsURL = buildURL(path: "/references") else {
+            self.errorMessage = "Invalid URL"
+            self.viewState = .error
+            return
+        }
+        
+        let modelsPublisher = service.fetch(url: modelsURL, type: [Model].self)
+        let yearsPublisher = service.fetch(url: yearsURL, type: [ModelYear].self)
+        let monthsPublisher = service.fetch(url: monthsURL, type: [MonthReference].self)
         
         Publishers.Zip3(modelsPublisher, yearsPublisher, monthsPublisher)
             .sink { completion in
@@ -84,5 +92,10 @@ class MakeDetailViewModel: ObservableObject {
             displayedModels = models.filter { $0.name.localizedStandardContains(searchText) }
             displayedYears = years.filter { $0.name.localizedStandardContains(searchText) }
         }
+    }
+    
+    func buildURL(path: String) -> URL? {
+        guard let url = URL(string: (service.url + path)) else { return nil }
+        return url
     }
 }

@@ -19,7 +19,7 @@ class SecondDetailViewModel: ObservableObject {
     let year: ModelYear?
     let monthCode: String
     
-    private let webService = WebService()
+    private let service = WebService()
     private var cancellable: AnyCancellable?
     var viewState = ViewState.loading
     
@@ -40,7 +40,13 @@ class SecondDetailViewModel: ObservableObject {
     
     func loadModels() {
         if let year {
-            let modelsPublisher = webService.fetchModelsByMakeAndYear(makeCode: make.code, yearCode: year.code)
+            guard let url = URL(string: (service.url + "/cars/brands/\(make.code)/years/\(year.code)/models")) else {
+                self.errorMessage = "Invalid URL"
+                self.viewState = .error
+                return
+            }
+            
+            let modelsPublisher = service.fetch(url: url, type: [Model].self)
             
             cancellable = modelsPublisher
                 .sink(receiveCompletion: { completion in
@@ -63,7 +69,13 @@ class SecondDetailViewModel: ObservableObject {
     
     func loadYears() {
         if let model {
-            let yearsPublisher = webService.fetchYearsByModel(makeCode: make.code, modelCode: model.code)
+            guard let url = URL(string: (service.url + "/cars/brands/\(make.code)/models/\(model.code)/years")) else {
+                self.errorMessage = "Invalid URL"
+                self.viewState = .error
+                return
+            }
+                        
+            let yearsPublisher = service.fetch(url: url, type: [ModelYear].self)
             
             cancellable = yearsPublisher
                 .sink(receiveCompletion: { completion in

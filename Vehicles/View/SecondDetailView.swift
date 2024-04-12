@@ -64,7 +64,7 @@ struct SecondDetailView: View {
                     .font(.largeTitle)
             }
             
-            Text("\(viewModel.make.name) > \(viewModel.model?.name ?? viewModel.year?.yearNameWithZeroKM ?? "")".uppercased())
+            Text("\(viewModel.make.name) → \(viewModel.model?.name ?? viewModel.year?.yearNameWithZeroKM ?? "")".uppercased())
                 .multilineTextAlignment(.center)
                 .font(.headline)
                 .padding()

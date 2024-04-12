@@ -11,15 +11,23 @@ import Combine
 class SearchViewModel: ObservableObject {
     @Published var makes = [Make]()
     @Published var displayedMakes = [Make]()
-    @Published var isShowingGrid = true
     @Published var isSearchingByLetter = false
     @Published var errorMessage = ""
+    @Published var isShowingGrid: Bool {
+        didSet {
+            UserDefaults.standard.set(isShowingGrid, forKey: "isShowingGrid")
+        }
+    }
     
-    private let webService = WebService()
+    private let service = WebService()
     private var cancellable: AnyCancellable?
     var viewState = ViewState.loading
     
     let alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
+    
+    init() {
+        self.isShowingGrid = UserDefaults.standard.bool(forKey: "isShowingGrid")
+    }
     
     func loadMakes() {
         let cachedData = MakeCache.cachedMake()
@@ -30,7 +38,13 @@ class SearchViewModel: ObservableObject {
             }
         }
         
-        cancellable = webService.fetchMakes()
+        guard let url = URL(string: (service.url + "/cars/brands")) else {
+            self.errorMessage = "Invalid URL"
+            self.viewState = .error
+            return
+        }
+        
+        cancellable = service.fetch(url: url, type: [Make].self)
             .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
@@ -41,7 +55,7 @@ class SearchViewModel: ObservableObject {
                     }
                     self.viewState = .error
                 }
-            }, receiveValue: { makes in
+            }, receiveValue: { (makes: [Make]) in
                 self.makes = makes
                 self.displayedMakes = self.makes
                 self.viewState = .ready

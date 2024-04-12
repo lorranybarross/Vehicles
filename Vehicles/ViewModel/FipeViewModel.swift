@@ -17,8 +17,8 @@ class FipeViewModel: ObservableObject {
     let year: ModelYear
     let monthCode: String
     
-    private let webService = WebService()
-    private var cancellable: AnyCancellable?
+    private let service = WebService()
+    private var cancellables = Set<AnyCancellable>()
     var viewState = ViewState.loading
     
     init(make: Make, model: Model, year: ModelYear, monthCode: String) {
@@ -30,14 +30,18 @@ class FipeViewModel: ObservableObject {
     
     func loadData() {
         loadFipe()
+        getFipeFromPeriod()
+        self.viewState = .ready
     }
     
     func loadFipe() {
-        cancellable = webService.fetchFipe(
-            makeCode: make.code,
-            modelCode: model.code,
-            yearCode: year.code,
-            monthCode: monthCode)
+        guard let url = URL(string: (service.url + "/cars/brands/\(make.code)/models/\(model.code)/years/\(year.code)?reference=\(monthCode)")) else {
+            self.errorMessage = "Invalid URL"
+            self.viewState = .error
+            return
+        }
+        
+        service.fetch(url: url, type: Fipe.self)
         .sink(receiveCompletion: { completion in
             switch completion {
             case .finished:
@@ -52,35 +56,34 @@ class FipeViewModel: ObservableObject {
             self.fipe = fipe
             self.viewState = .ready
         })
+        .store(in: &cancellables)
     }
     
     func getFipeFromPeriod() {
         let initialPeriod = Int(monthCode) ?? 308
         var count = 0
         
-        while count < 5 {
-            cancellable = webService.fetchFipe(
-                makeCode: make.code,
-                modelCode: model.code,
-                yearCode: year.code,
-                monthCode: monthCode
-            )
-            .sink { completion in
-                switch completion {
-                case .finished:
-                    break
-                case .failure(let error):
-                    if let requestError = error as? RequestError {
-                        self.errorMessage = requestError.errorMessage
-                    }
-                    self.viewState = .error
-                }
-            } receiveValue: { fipe in
-                self.fipeFromPeriod.append(fipe)
-            }
-            
-            count += 1
-        }
+//        while count < 5 {
+//            webService.fetchFipe(
+//                makeCode: make.code,
+//                modelCode: model.code,
+//                yearCode: year.code,
+//                monthCode: String(initialPeriod - count)
+//            )
+//            .sink { completion in
+//                switch completion {
+//                case .finished:
+//                    break
+//                case .failure(_):
+//                    break
+//                }
+//            } receiveValue: { fipe in
+//                self.fipeFromPeriod.append(fipe)
+//            }
+//            .store(in: &cancellables)
+//            
+//            count += 1
+//        }
     }
     
 //    func getFipeFromPeriod() async {

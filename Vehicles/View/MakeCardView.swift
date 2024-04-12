@@ -43,11 +43,6 @@ struct MakeCardView: View {
                 .multilineTextAlignment(.leading)
                 .bold()
                 .padding(.top, 5)
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .foregroundStyle(.textPrimary)
         }
     }
     
@@ -58,6 +53,11 @@ struct MakeCardView: View {
                             "\(make.name.filter { $0.isLetter || $0.isNumber || $0.isWhitespace })")
                 textView
             }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .foregroundStyle(.textPrimary)
         }
         .padding()
     }

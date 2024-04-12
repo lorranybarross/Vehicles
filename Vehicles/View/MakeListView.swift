@@ -30,7 +30,6 @@ struct MakeListView: View {
         .frame(maxWidth: .infinity, maxHeight: 30)
         .font(.title3)
         .multilineTextAlignment(.leading)
-        .bold()
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
         .background(.regularMaterial)
@@ -41,6 +40,7 @@ struct MakeListView: View {
     var textView: some View {
         HStack {
             Text(make.name).tag(make.code)
+                .bold()
             Spacer()
             Image(systemName: "chevron.right")
         }

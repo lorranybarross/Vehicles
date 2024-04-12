@@ -20,13 +20,13 @@ struct TextList: View {
                 .font(.headline)
                 .fixedSize(horizontal: false, vertical: true)
                 .multilineTextAlignment(.leading)
-                .foregroundStyle(.textPrimary)
             
             Spacer()
             
             Image(systemName: "chevron.right")
         }
         .padding()
+        .foregroundStyle(.textPrimary)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.regularMaterial)
         .cornerRadius(10)

@@ -10,11 +10,6 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         TabView {
-//            SearchByPlateView()
-//                .tabItem {
-//                    Label("Plate", systemImage: "licenseplate")
-//                }
-            
             SearchView()
                 .tabItem {
                     Label("Search", systemImage: "magnifyingglass")

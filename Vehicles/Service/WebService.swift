@@ -5,126 +5,27 @@
 //  Created by Lorrany Barros on 05/04/24.
 //
 
-import Foundation
+import Alamofire
 import Combine
+import Foundation
 
 class WebService {
-    private let baseURL = "https://parallelum.com.br/fipe/api/v2/cars"
+    let url = "https://parallelum.com.br/fipe/api/v2"
     
-    func fetchMakes() -> AnyPublisher<[Make], Error> {
-        let endpoint = baseURL + "/brands"
-        let request = URLRequest(url: URL(string: endpoint)!)
-        
-        return URLSession.shared.dataTaskPublisher(for: request)
-            .tryMap({ data, response -> Data in
-                if let response = response as? HTTPURLResponse, response.statusCode != 200 {
-                    throw RequestError.handleResponse(response.statusCode)
+    func fetch<T: Decodable>(url: URL, type: T.Type) -> AnyPublisher<T, Error> {
+        return AF.request(url)
+            .publishDecodable(type: type, decoder: JSONDecoder())
+            .tryMap { response -> T in
+                if let result = response.response?.statusCode, result != 200 {
+                    throw RequestError.handleResponse(result)
                 }
-                return data
-            })
-            .decode(type: [Make].self, decoder: JSONDecoder())
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
-    }
-    
-    func fetchModels(makeCode: String) -> AnyPublisher<[Model], Error> {
-        let endpoint = baseURL + "/brands/" + makeCode + "/models"
-        
-        let url = URL(string: endpoint)!
-        
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .tryMap({ data, response -> Data in
-                if let response = response as? HTTPURLResponse, response.statusCode != 200 {
-                    throw RequestError.handleResponse(response.statusCode)
+                
+                guard let data = response.value else {
+                    throw RequestError.unknown
                 }
+                
                 return data
-            })
-            .decode(type: [Model].self, decoder: JSONDecoder())
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
-    }
-    
-    func fetchModelsByMakeAndYear(makeCode: String, yearCode: String) -> AnyPublisher<[Model], Error> {
-        let endpoint = baseURL + "/brands/" + makeCode + "/years/" + yearCode + "/models"
-        
-        let url = URL(string: endpoint)!
-        
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .tryMap({ data, response -> Data in
-                if let response = response as? HTTPURLResponse, response.statusCode != 200 {
-                    throw RequestError.handleResponse(response.statusCode)
-                }
-                return data
-            })
-            .decode(type: [Model].self, decoder: JSONDecoder())
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
-    }
-    
-    func fetchYearsByModel(makeCode: String, modelCode: String) -> AnyPublisher<[ModelYear], Error> {
-        let endpoint = baseURL + "/brands/" + makeCode + "/models/" + modelCode + "/years"
-        
-        let url = URL(string: endpoint)!
-        
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .tryMap({ data, response -> Data in
-                if let response = response as? HTTPURLResponse, response.statusCode != 200 {
-                    throw RequestError.handleResponse(response.statusCode)
-                }
-                return data
-            })
-            .decode(type: [ModelYear].self, decoder: JSONDecoder())
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
-    }
-    
-    func fetchYearByMake(makeCode: String) -> AnyPublisher<[ModelYear], Error> {
-        let endpoint = baseURL + "/brands/" + makeCode + "/years"
-        
-        let url = URL(string: endpoint)!
-        
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .tryMap({ data, response -> Data in
-                if let response = response as? HTTPURLResponse, response.statusCode != 200 {
-                    throw RequestError.handleResponse(response.statusCode)
-                }
-                return data
-            })
-            .decode(type: [ModelYear].self, decoder: JSONDecoder())
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
-    }
-    
-    func fetchFipe(makeCode: String, modelCode: String, yearCode: String, monthCode: String) -> AnyPublisher<Fipe, Error> {
-        let endpoint = baseURL + "/brands/" + makeCode + "/models/" + modelCode + "/years/" + yearCode + "?reference=" + monthCode
-        
-        let url = URL(string: endpoint)!
-        
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .tryMap({ data, response -> Data in
-                if let response = response as? HTTPURLResponse, response.statusCode != 200 {
-                    throw RequestError.handleResponse(response.statusCode)
-                }
-                return data
-            })
-            .decode(type: Fipe.self, decoder: JSONDecoder())
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
-    }
-    
-    func fetchMonthReference() -> AnyPublisher<[MonthReference], Error> {
-        let endpoint = baseURL.split(separator: "/").dropLast().joined(separator: "/") + "/references"
-        
-        let url = URL(string: endpoint)!
-        
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .tryMap({ data, response -> Data in
-                if let response = response as? HTTPURLResponse, response.statusCode != 200 {
-                    throw RequestError.handleResponse(response.statusCode)
-                }
-                return data
-            })
-            .decode(type: [MonthReference].self, decoder: JSONDecoder())
+            }
             .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
